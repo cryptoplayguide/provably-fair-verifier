@@ -11,9 +11,15 @@ Small, dependency-free JavaScript module that recomputes provably fair results i
 
 Other operators may use different formulas. If your numbers differ, check that operator's documentation. A match only confirms the commitment; it does not remove the house edge or prove payout reliability.
 
+## Install
+```sh
+npm install @cryptoplayguide/provably-fair-verifier
+```
+Note: the unscoped npm package `provably-fair-verifier` is not affiliated with this project.
+
 ## Usage
 ```js
-import { fairResult } from './src/index.js';
+import { fairResult } from '@cryptoplayguide/provably-fair-verifier';
 const r = await fairResult({ game: 'dice', server, hash, client, nonce: '3', salt: '' });
 console.log(r.matches, r.result);
 ```
