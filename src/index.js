@@ -11,6 +11,11 @@ export function validateFair({ game, server, hash, nonce }) {
   if (!server) throw new Error('invalid_input');
   if (game !== 'crash' && (!/^\d+$/.test(nonce) || !Number.isSafeInteger(Number(nonce)))) throw new Error('invalid_nonce');
 }
+export const LIMBO_ZERO_MESSAGE = 'Limbo float must be greater than 0 and finite (got 0): multiplier would be Infinity';
+export function limboMultiplier(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0 || value >= 1) throw new RangeError(value === 0 ? LIMBO_ZERO_MESSAGE : `Limbo float must be in (0, 1), got ${value}`);
+  return Math.max(Math.floor(1e8 / (value * 1e8) * .99 * 100) / 100, 1);
+}
 export async function fairResult(input, webCrypto = globalThis.crypto) {
   validateFair(input);
   const { game, server, hash, client, nonce, salt } = input;
@@ -19,6 +24,6 @@ export async function fairResult(input, webCrypto = globalThis.crypto) {
   const bytes = new Uint8Array(await webCrypto.subtle.sign('HMAC', key, game === 'crash' ? unhex(server) : encoder.encode(`${client}:${Number(nonce)}:0`)));
   const digest = hex(bytes);
   const value = game === 'crash' ? parseInt(digest.slice(0, 13), 16) / 2 ** 52 : bytes.slice(0, 4).reduce((sum, byte, i) => sum + byte / 256 ** (i + 1), 0);
-  const result = game === 'crash' ? Math.max(1, Math.floor(99 / (1 - value)) / 100) : game === 'dice' ? Math.floor(value * 10001) / 100 : Math.max(Math.floor(1e8 / (value * 1e8) * .99 * 100) / 100, 1);
+  const result = game === 'crash' ? Math.max(1, Math.floor(99 / (1 - value)) / 100) : game === 'dice' ? Math.floor(value * 10001) / 100 : limboMultiplier(value);
   return { commitment, matches: commitment === hash.toLowerCase(), bytes, digest, value, result };
 }
