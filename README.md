@@ -13,9 +13,9 @@ Other operators may use different formulas. If your numbers differ, check that o
 
 ## Install
 ```sh
-npm install @cryptoplayguide/provably-fair-verifier
+npm install github:cryptoplayguide/provably-fair-verifier
 ```
-Note: the unscoped npm package `provably-fair-verifier` is not affiliated with this project.
+This package is not published on the npm registry yet; install it from GitHub as above. Note: the unscoped npm package `provably-fair-verifier` is not affiliated with this project.
 
 ## Usage
 ```js
