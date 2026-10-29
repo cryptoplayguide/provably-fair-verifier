@@ -21,3 +21,27 @@ test('limbo rejects zero and invalid floats', () => {
   for (const v of [-0.1, 1, NaN, Infinity, '0.5']) assert.throws(() => limboMultiplier(v), RangeError);
   assert.equal(limboMultiplier(0.5), 1.98);
 });
+// Mines/Plinko vectors: identical to the live cryptoplay.guide verifier output and to Stake's published byteGenerator.
+import { createHmac } from 'node:crypto';
+import { minesFromFloats, plinkoFromFloats, stakeFloats } from '../src/index.js';
+function refFloats(s, c, n, count) { const out = [];
+  for (let r = 0; out.length < count; r++) { const b = createHmac('sha256', s).update(`${c}:${n}:${r}`).digest();
+    for (let i = 0; i < 32 && out.length < count; i += 4) out.push(b[i] / 256 + b[i+1] / 256 ** 2 + b[i+2] / 256 ** 3 + b[i+3] / 256 ** 4); } return out; }
+test('mines known vectors', async () => {
+  const m3 = await fairResult({ ...input, game: 'mines', mines: 3 }, webcrypto);
+  assert.equal(m3.matches, true); assert.deepEqual(m3.result, [10, 14, 7]);
+  const m24 = await fairResult({ ...input, game: 'mines', mines: 24 }, webcrypto);
+  assert.deepEqual(m24.result, [10,14,7,0,18,1,5,9,12,3,19,6,24,17,20,15,16,21,13,11,22,8,4,23]);
+  assert.deepEqual(m24.floats, refFloats(input.server, input.client, 3, 24));
+});
+test('plinko known vectors (path/slot only)', async () => {
+  assert.deepEqual((await fairResult({ ...input, game: 'plinko', rows: 8 }, webcrypto)).result, { path: [0,1,0,0,1,0,0,0], slot: 2 });
+  assert.deepEqual((await fairResult({ ...input, game: 'plinko', rows: 16 }, webcrypto)).result, { path: [0,1,0,0,1,0,0,0,0,0,1,0,1,1,1,1], slot: 7 });
+});
+test('mines/plinko helpers and validation', async () => {
+  assert.deepEqual(minesFromFloats([0, 0.999], 2), [0, 24]);
+  assert.deepEqual(plinkoFromFloats([0.1, 0.6, 0.7], 3), { path: [0, 1, 1], slot: 2 });
+  assert.equal((await stakeFloats(input.server, input.client, 3, 1, webcrypto))[0], (await fairResult(input, webcrypto)).value);
+  for (const mines of [0, 25, 'x']) assert.throws(() => validateFair({ ...input, game: 'mines', mines }), /invalid_extra/);
+  for (const rows of [7, 17]) assert.throws(() => validateFair({ ...input, game: 'plinko', rows }), /invalid_extra/);
+});

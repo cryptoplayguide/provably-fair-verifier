@@ -1,12 +1,12 @@
 {
   "name": "@cryptoplayguide/provably-fair-verifier",
-  "version": "1.0.1",
-  "description": "Dependency-free provably fair verifier (Dice, Limbo, Crash) using Web Crypto HMAC-SHA256",
+  "version": "1.1.0",
+  "description": "Dependency-free provably fair verifier (Dice, Limbo, Crash, Mines, Plinko) using Web Crypto HMAC-SHA256",
   "type": "module",
   "main": "src/index.js",
   "exports": "./src/index.js",
   "scripts": {
-    "test": "node --test test/"
+    "test": "node --test test/*.test.mjs"
   },
   "license": "MIT",
   "homepage": "https://cryptoplay.guide/",
@@ -16,6 +16,8 @@
     "dice",
     "limbo",
     "crash",
+    "mines",
+    "plinko",
     "verifier",
     "web-crypto"
   ],
